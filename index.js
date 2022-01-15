@@ -19,7 +19,7 @@ const LEN = 32
  * @param { string } data
  * @returns { Promise<string> }
  */
-async function encrypt(key, data) {
+async function encrypt (key, data) {
   data = JSON.stringify(data)
   const iv = await randomBytes(16)
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
@@ -48,7 +48,7 @@ async function encrypt(key, data) {
 * @param { string } data
 * @returns { Promise<string> }
 */
-async function decrypt(key, data) {
+async function decrypt (key, data) {
   const [iv, encrypted] = data.split(':')
   const decipher = crypto.createDecipheriv(
     'aes-256-cbc',
@@ -72,32 +72,32 @@ async function decrypt(key, data) {
     decipher.end()
   })
 }
-async function random() {
+async function random () {
   return randomBytes(LEN)
 }
 
-async function plugin(fastify, options) {
+async function plugin (fastify, options) {
   // function returning a Promise
   const { key } = options
 
   fastify.decorate('crypto', {
-    async generateKey() {
+    async generateKey () {
       // Buffer
       return scrypt(await random(), await random(), LEN)
     },
-    async encrypt(data) {
+    async encrypt (data) {
       return encrypt(await key(), data)
     },
-    async decrypt(data) {
+    async decrypt (data) {
       return decrypt(await key(), data)
     },
-    async hash(password) {
+    async hash (password) {
       const salt = await random()
       const derivedKey = await scrypt(password, salt, LEN)
       // 2 x Buffer
       return { salt, derivedKey }
     },
-    async verify({ salt, derivedKey }, password) {
+    async verify ({ salt, derivedKey }, password) {
       return timingSafeEqual(
         await scrypt(password, salt, LEN),
         derivedKey
